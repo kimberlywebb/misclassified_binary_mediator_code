@@ -42,7 +42,7 @@ c_shape <- 1
 # True parameter values (gamma terms set the misclassification rate)
 true_beta <- matrix(c(1, -2, .5), ncol = 1)
 true_gamma <- matrix(c(1, 1, -.5, -1.5), nrow = 2, byrow = FALSE) 
-true_theta <- matrix(c(1, 1.5, -2, -.2), ncol = 1)
+true_theta <- matrix(c(1, 1.5, -2, -.2, .5), ncol = 1)
 
 ################################################################################
 # Run simulations 
@@ -58,9 +58,10 @@ sim_indicator <- NULL
 
 for(i in 1:n_sim){
   
-  data <- mediation_data_binaryY(sample_size,
-                                 x_mu, x_sigma, z_shape, z_scale, c_shape,
-                                 true_beta, true_gamma, true_theta)
+  # Generate data
+  data <- mediation_data_binaryY_XM(sample_size,
+                                    x_mu, x_sigma, z_shape, z_scale, c_shape,
+                                    true_beta, true_gamma, true_theta)
   
   # Set starting values for the EM algorithm
   start_beta <- matrix(rep(1, 3), ncol = 1)
@@ -154,14 +155,14 @@ for(i in 1:n_sim){
   doubled_data$w[doubled_data$m == 0 & doubled_data$mstar_01 == 0] <- npv[doubled_data$m == 0 & doubled_data$mstar_01 == 0]
   
   # Fit weighted logistic regression to estimate theta
-  weighted_outcome_model <- glm(y_01 ~ x + m + c, weights = w,
+  weighted_outcome_model <- glm(y_01 ~ x + m + c + x*m, weights = w,
                                 data = doubled_data,
                                 family = "binomial"(link = "logit"))
   summary(weighted_outcome_model)
   
   #  Save results and reorder theta
   results_i <- c(c(predicted_beta), c(predicted_gamma),
-                 c(unname(coefficients(weighted_outcome_model)))[c(1:3, 4)])
+                 c(unname(coefficients(weighted_outcome_model))))
   
   my_results <- c(my_results, results_i)
   sim_indicator <- c(sim_indicator, rep(i, 12))
@@ -170,12 +171,12 @@ for(i in 1:n_sim){
 }
 
 sim_results <- data.frame(estimate = na.omit(my_results),
-                          sim = rep(1:n_sim, each = 11),
+                          sim = rep(1:n_sim, each = 12),
                           parameter = rep(c("beta_0", "beta_x", "beta_c",
                                             "gamma_11", "gamma_21",
                                             "gamma_12", "gamma_22",
                                             "theta_0", "theta_x", "theta_m",
-                                            "theta_c"),
+                                            "theta_c", "theta_xm"),
                                           n_sim),
                           true_value = rep(c(c(true_beta), c(true_gamma),
                                              c(true_theta)), n_sim))
@@ -188,7 +189,7 @@ summarized_sim_results <- sim_results %>%
                    rmse_estimate = sqrt(((mean(estimate) - mean(true_value))^2) + (sd(estimate)^2)),
                    bias = mean(bias)) %>%
   ungroup()  %>%
-  mutate(true_value = c(1, .5, -2, 1, -.5, 1, -1.5, 1, -.2, -2, 1.5))
+  mutate(true_value = c(1, .5, -2, 1, -.5, 1, -1.5, 1, -.2, -2, 1.5, .5))
 
 summarized_sim_results
 

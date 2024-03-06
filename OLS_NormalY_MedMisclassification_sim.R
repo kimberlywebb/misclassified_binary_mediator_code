@@ -43,6 +43,8 @@ c_shape <- 1
 true_beta <- matrix(c(1, -2, .5), ncol = 1)
 true_gamma <- matrix(c(1.8, 1, -1.5, -1), nrow = 2, byrow = FALSE) 
 true_theta <- matrix(c(1, 1.5, -2, -.2), ncol = 1)
+# Note that the OLS correction method does not allow for an interaction term yet.
+
 ################################################################################
 # Run simulations 
 
