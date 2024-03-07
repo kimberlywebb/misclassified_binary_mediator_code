@@ -61,7 +61,7 @@ mediation_EM_binaryY_XM <- function(Mstar, # Observed mediator vector
     gamma_flip_index = ncol(X) + 1 + c((n_gamma_param + 1):length(gamma_index), 1:n_gamma_param)
     c(-1*turboEM::pars(results)[1:(ncol(X) + 1)], turboEM::pars(results)[gamma_flip_index],
       turboEM::pars(results)[8] + turboEM::pars(results)[10],
-      turboEM::pars(results)[9],
+      turboEM::pars(results)[9] + turboEM::pars(results)[12],
       -1 * turboEM::pars(results)[10],
       turboEM::pars(results)[11],
       -1 * turboEM::pars(results)[12])
